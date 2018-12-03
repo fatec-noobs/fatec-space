@@ -1,5 +1,6 @@
 import requests
 import pandas
+import datetime
 from bs4 import BeautifulSoup
 
 
@@ -11,6 +12,7 @@ class FatecSpaceService(object):
 
     def get_data_frame(self):
         content = self.__search()
+        self.__save_backup(content)
         content = self.__normalize_content(content)
         data = self.__create_data(content)
         return pandas.DataFrame(data=data)
@@ -49,3 +51,10 @@ class FatecSpaceService(object):
             data['Layout'].append(content[i + 4])
             data['Criatividade'].append(content[i + 5])
         return data
+
+    def __save_backup(self, content):
+        date = datetime.datetime.now()
+        file_name = f'data/data_{date.year}-{date.month}-{date.day}_{date.hour}-{date.minute}-{date.second}.backup'
+        file = open(file_name, 'x')
+        file.write(content)
+        file.close()

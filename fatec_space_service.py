@@ -11,11 +11,28 @@ class FatecSpaceService(object):
         self.__HEADERS = {'user-agent': 'my-app'}
 
     def get_data_frame(self):
-        content = self.__search()
-        self.__save_backup(content)
-        content = self.__normalize_content(content)
-        data = self.__create_data(content)
+        data = self.__get_data({'save_backup': True})
         return pandas.DataFrame(data=data)
+
+    def get_plot(self):
+        data = self.__get_data()
+        del data['Usuário']
+        for key in data:
+            total = 0
+            for evaluation in data[key]:
+                total += int(evaluation)
+            data[key] = [total]
+        data = pandas.DataFrame(data=data)
+        data = data.astype(int)
+        data.index = ['']
+        return data.plot(kind='bar', title='Total de pontos', figsize=(8, 4))
+
+    def __get_data(self, options={}):
+        content = self.__search()
+        if 'save_backup' in options:
+            self.__save_backup(content)
+        content = self.__normalize_content(content)
+        return self.__create_data(content)
 
     def __search(self):
         request = requests.post(self.__URL, data=self.__DATA, headers=self.__HEADERS)
@@ -58,3 +75,4 @@ class FatecSpaceService(object):
         file = open(file_name, 'x')
         file.write(content)
         file.close()
+
